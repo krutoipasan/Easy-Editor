@@ -48,34 +48,6 @@ mainlayout.addLayout(Vlayout2)
 
 win.setLayout(mainlayout)
 
-class ImageProcessor():
-    def __init__(self):
-        self.picture=None
-        self.dir=None
-        self.filename=None
-        self.save_dir=("Modified/")
-    def loadImage(self, filename):
-        self.filename=filename
-        thefile=os.path.join(filedir, filename)
-        self.image = Image.open(thefile)
-
-workImage=ImageProcessor()
-
-def showImage(self, path):
-    picture.hide()
-    pmimage=QPixmap(path)
-    w = picture.width()
-    h =  picture.height()
-    pmimage=pmimage.scaled(w, h, Qt.KeepAspectRatio)
-    picture.setPixmap(pmimage)
-    picture.show()
-
-def showchosenimage():
-    if filelist.currentRow() >= 0:
-        workImage.filename=filelist.currentItem().text()
-        workImage.loadImage(workImage.filename)
-        img_path=os.path.join(filedir, workImage.filename)
-        showImage(workImage, img_path)
 
 def choosefiledir():
     global filedir
@@ -98,8 +70,57 @@ def showfilenameslist():
     for file in files:
         filelist.addItem(file)
 
+class ImageProcessor():
+    def __init__(self):
+        self.picture=None
+        self.dir=None
+        self.filename=None
+        self.save_dir=("Modified/")
+
+    def loadImage(self, dir, filename):
+        self.dir=dir
+        self.filename=filename
+        thefile=os.path.join(filedir, filename)
+        self.image = Image.open(thefile)
+
+    def saveimage(self):
+        save_path=os.path.join(self.dir, self.save_dir)
+        if not(os.path.exists(save_path) or os.path.isdir(save_path)):
+            os.mkdir(save_path)
+        self.image.save(os.path.join(save_path, self.filename))
+
+    def do_bw(self):
+        self.image=self.image.convert("L")
+        self.saveimage()
+        img_path=os.path.join(self.dir, self.save_dir, self.filename)
+        self.showImage(img_path)
+    def turn_right(self):
+        self.image=self.image.rotate(90)
+        self.saveimage()
+        img_path=os.path.join(self.dir, self.save_dir, self.filename)
+        self.showImage(img_path)
+    def showImage(self, path):
+        picture.hide()
+        pmimage=QPixmap(path)
+        w = picture.width()
+        h =  picture.height()
+        pmimage=pmimage.scaled(w, h, Qt.KeepAspectRatio)
+        picture.setPixmap(pmimage)
+        picture.show()
+
+def showchosenimage():
+    if filelist.currentRow() >= 0:
+        filename=filelist.currentItem().text()
+        workImage.loadImage(filedir, filename)
+        workImage.showImage(os.path.join(filedir, filename))
+
+workImage=ImageProcessor()
+
+
+filelist.currentRowChanged.connect(showchosenimage)
 btn_file.clicked.connect(showfilenameslist)
-filelist.itemClicked.connect(showchosenimage)
+btn_right.clicked.connect(workImage.turn_right)
+btn_wb.clicked.connect(workImage.do_bw)
 
 win.show()
 app.exec()
