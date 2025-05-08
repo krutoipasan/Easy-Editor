@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QListWidget, QFileDialog, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QApplication, QLabel, QMessageBox, QWidget, QPushButton, QListWidget, QFileDialog, QHBoxLayout, QVBoxLayout
 from PyQt5.QtGui import QPixmap
 import os
 from PIL import Image, ImageFilter
@@ -10,13 +10,13 @@ win.resize(680, 500)
 win.setWindowTitle("Easy Editor")
 
 btn_file=QPushButton("Папка")
+#btn_file.isCheckable()
 btn_left=QPushButton("Вліво")
 btn_right=QPushButton("Вправо")
 btn_mirror=QPushButton("Відзеркалити")
 btn_intensity=QPushButton("Різкість")
 btn_wb=QPushButton("Ч\Б")
-
-picture=QLabel("Картина")
+picture=QLabel("Картина", alignment=Qt.AlignCenter)
 
 filelist=QListWidget()
 
@@ -31,7 +31,6 @@ Hlayout3=QHBoxLayout()
 
 Vlayout1.addWidget(btn_file)
 Vlayout1.addWidget(filelist)
-
 Hlayout2.addWidget(picture, 100)
 Hlayout3.addWidget(btn_left)
 Hlayout3.addWidget(btn_right)
@@ -63,6 +62,7 @@ def filter(files, extensions):
     return result
     
 def showfilenameslist():
+    #btn_file.isChecked()
     extensions=[".jpg", ".jpeg", ".png", ".webp", ".gif"]
     choosefiledir()
     files=filter(os.listdir(filedir), extensions)
@@ -94,11 +94,13 @@ class ImageProcessor():
         self.saveimage()
         img_path=os.path.join(self.dir, self.save_dir, self.filename)
         self.showImage(img_path)
+
     def turn_right(self):
-        self.image=self.image.rotate(90)
+        self.image=self.image.transpose(Image.ROTATE_90)
         self.saveimage()
         img_path=os.path.join(self.dir, self.save_dir, self.filename)
         self.showImage(img_path)
+
     def showImage(self, path):
         picture.hide()
         pmimage=QPixmap(path)
@@ -107,6 +109,15 @@ class ImageProcessor():
         pmimage=pmimage.scaled(w, h, Qt.KeepAspectRatio)
         picture.setPixmap(pmimage)
         picture.show()
+
+def error():
+    error_message=QMessageBox()
+    error_message.setIcon(QMessageBox.Warning)
+    error_message.setWindowTitle("Обережно!")
+    error_message.setText("Ви не обрали папку для ваших фотографій!")
+    error_message.setStandardButtons(QMessageBox.Ok)
+    error_message.exec_()
+    error_message.show()
 
 def showchosenimage():
     if filelist.currentRow() >= 0:
