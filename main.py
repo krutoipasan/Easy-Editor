@@ -10,11 +10,11 @@ win.resize(680, 500)
 win.setWindowTitle("Easy Editor")
 
 btn_file=QPushButton("Папка")
-#btn_file.isCheckable()
+btn_file.setCheckable(True)
 btn_left=QPushButton("Вліво")
 btn_right=QPushButton("Вправо")
 btn_mirror=QPushButton("Відзеркалити")
-btn_intensity=QPushButton("Різкість")
+btn_blur=QPushButton("Різкість")
 btn_wb=QPushButton("Ч\Б")
 picture=QLabel("Картина", alignment=Qt.AlignCenter)
 
@@ -35,7 +35,7 @@ Hlayout2.addWidget(picture, 100)
 Hlayout3.addWidget(btn_left)
 Hlayout3.addWidget(btn_right)
 Hlayout3.addWidget(btn_mirror)
-Hlayout3.addWidget(btn_intensity)
+Hlayout3.addWidget(btn_blur)
 Hlayout3.addWidget(btn_wb)
 
 Vlayout2.addLayout(Hlayout1)
@@ -88,15 +88,33 @@ class ImageProcessor():
         if not(os.path.exists(save_path) or os.path.isdir(save_path)):
             os.mkdir(save_path)
         self.image.save(os.path.join(save_path, self.filename))
-
+    
     def do_bw(self):
         self.image=self.image.convert("L")
         self.saveimage()
         img_path=os.path.join(self.dir, self.save_dir, self.filename)
         self.showImage(img_path)
 
+    def do_mirror(self):
+        self.image=self.image.transpose(Image.FLIP_LEFT_RIGHT)
+        self.saveimage()
+        img_path=os.path.join(self.dir, self.save_dir, self.filename)
+        self.showImage(img_path)
+
+    def do_blur(self):
+        self.image=self.image.filter(ImageFilter.BLUR)
+        self.saveimage()
+        img_path=os.path.join(self.dir, self.save_dir, self.filename)
+        self.showImage(img_path)
+
     def turn_right(self):
         self.image=self.image.transpose(Image.ROTATE_90)
+        self.saveimage()
+        img_path=os.path.join(self.dir, self.save_dir, self.filename)
+        self.showImage(img_path)
+
+    def turn_left(self):
+        self.image=self.image.transpose(Image.ROTATE_270)
         self.saveimage()
         img_path=os.path.join(self.dir, self.save_dir, self.filename)
         self.showImage(img_path)
@@ -129,9 +147,27 @@ workImage=ImageProcessor()
 
 
 filelist.currentRowChanged.connect(showchosenimage)
-btn_file.clicked.connect(showfilenameslist)
-btn_right.clicked.connect(workImage.turn_right)
-btn_wb.clicked.connect(workImage.do_bw)
+def btn_file_clicked():
+    if btn_file.isChecked():
+        showfilenameslist()
+        # Connect buttons to their functions
+        btn_left.clicked.disconnect()
+        btn_left.clicked.connect(workImage.turn_left)
+        btn_right.clicked.disconnect()
+        btn_right.clicked.connect(workImage.turn_right)
+        btn_mirror.clicked.disconnect()
+        btn_mirror.clicked.connect(workImage.do_mirror)
+        btn_blur.clicked.disconnect()
+        btn_blur.clicked.connect(workImage.do_blur)
+        btn_wb.clicked.disconnect()
+        btn_wb.clicked.connect(workImage.do_bw)
+
+btn_file.clicked.connect(btn_file_clicked)
+btn_left.clicked.connect(error)
+btn_right.clicked.connect(error)
+btn_mirror.clicked.connect(error)
+btn_blur.clicked.connect(error)
+btn_wb.clicked.connect(error)
 
 win.show()
 app.exec()
